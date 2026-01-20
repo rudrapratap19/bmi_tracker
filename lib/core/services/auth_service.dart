@@ -7,7 +7,7 @@ class AuthService {
 
   Future<User?> signInWithGoogle() async {
     if (kIsWeb) {
-      // Use Firebase Auth's web popup flow to avoid needing a web clientId meta tag
+     
       final provider = GoogleAuthProvider();
       try {
         final cred = await _auth.signInWithPopup(provider);

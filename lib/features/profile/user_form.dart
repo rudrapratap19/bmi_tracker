@@ -473,168 +473,162 @@ class _UserFormState extends State<UserForm> {
                           ),
                           const SizedBox(height: 16),
 
-                          // Height Section
-                          Text(
-                            'Height',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                          // Height & Weight Section (Side by Side)
+                          Row(
+                            children: [
+                              // Height Column
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    ChoiceChip(
-                                      label: const Text('FT'),
-                                      selected: _heightUnit == 'in',
-                                      onSelected: (_) => setState(() => _heightUnit = 'in'),
-                                      selectedColor: Colors.black,
-                                      labelStyle: TextStyle(
-                                        color: _heightUnit == 'in' ? Colors.white : Colors.black,
+                                    Text(
+                                      'Height',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.grey.shade700,
                                       ),
-                                      backgroundColor: Colors.white,
                                     ),
-                                    const SizedBox(width: 8),
-                                    ChoiceChip(
-                                      label: const Text('CM'),
-                                      selected: _heightUnit == 'cm',
-                                      onSelected: (_) => setState(() => _heightUnit = 'cm'),
-                                      selectedColor: Colors.black,
-                                      labelStyle: TextStyle(
-                                        color: _heightUnit == 'cm' ? Colors.white : Colors.black,
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Expanded(
+                                          child: ChoiceChip(
+                                            label: const Text('FT'),
+                                            selected: _heightUnit == 'in',
+                                            onSelected: (_) => setState(() => _heightUnit = 'in'),
+                                            selectedColor: Colors.black,
+                                            labelStyle: TextStyle(
+                                              color: _heightUnit == 'in' ? Colors.white : Colors.black,
+                                            ),
+                                            backgroundColor: Colors.white,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: ChoiceChip(
+                                            label: const Text('CM'),
+                                            selected: _heightUnit == 'cm',
+                                            onSelected: (_) => setState(() => _heightUnit = 'cm'),
+                                            selectedColor: Colors.black,
+                                            labelStyle: TextStyle(
+                                              color: _heightUnit == 'cm' ? Colors.white : Colors.black,
+                                            ),
+                                            backgroundColor: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton(
+                                        onPressed: _showHeightPicker,
+                                        style: OutlinedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          _heightController.text.isEmpty ? 'Select' : _heightUnit == 'in' ? '${_heightController.text}"' : '${_heightController.text} cm',
+                                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                        ),
                                       ),
-                                      backgroundColor: Colors.white,
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
-                                OutlinedButton(
-                                  onPressed: _showHeightPicker,
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              ),
+                              const SizedBox(width: 16),
+                              // Weight Column
+                              Expanded(
+                                child: FormField<String>(
+                                  validator: (_) {
+                                    if (_weightController.text.isEmpty) return 'Req';
+                                    final weight = double.tryParse(_weightController.text);
+                                    if (weight == null || weight <= 0) return 'Inv';
+                                    return null;
+                                  },
+                                  builder: (formState) => Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        _heightController.text.isEmpty ? 'Select height' : '${_heightController.text} ${_heightUnit == 'in' ? 'in' : 'cm'}',
-                                        style: const TextStyle(fontSize: 16),
+                                        'Weight',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey.shade700,
+                                        ),
                                       ),
-                                      const Icon(Icons.arrow_drop_down),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Weight Section
-                          Text(
-                            'Weight',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          FormField<String>(
-                            validator: (_) {
-                              if (_weightController.text.isEmpty) return 'Required';
-                              final weight = double.tryParse(_weightController.text);
-                              if (weight == null || weight <= 0) return 'Invalid';
-                              return null;
-                            },
-                            builder: (formState) => Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade100,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Column(
-                                    children: [
+                                      const SizedBox(height: 8),
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          ChoiceChip(
-                                            label: const Text('KG'),
-                                            selected: _weightUnit == 'kg',
-                                            onSelected: (_) {
-                                              setState(() => _weightUnit = 'kg');
-                                              formState.didChange(_weightController.text);
-                                            },
-                                            selectedColor: Colors.black,
-                                            labelStyle: TextStyle(
-                                              color: _weightUnit == 'kg' ? Colors.white : Colors.black,
+                                          Expanded(
+                                            child: ChoiceChip(
+                                              label: const Text('KG'),
+                                              selected: _weightUnit == 'kg',
+                                              onSelected: (_) {
+                                                setState(() => _weightUnit = 'kg');
+                                                formState.didChange(_weightController.text);
+                                              },
+                                              selectedColor: Colors.black,
+                                              labelStyle: TextStyle(
+                                                color: _weightUnit == 'kg' ? Colors.white : Colors.black,
+                                              ),
+                                              backgroundColor: Colors.white,
                                             ),
-                                            backgroundColor: Colors.white,
                                           ),
-                                          const SizedBox(width: 8),
-                                          ChoiceChip(
-                                            label: const Text('LBS'),
-                                            selected: _weightUnit == 'lbs',
-                                            onSelected: (_) {
-                                              setState(() => _weightUnit = 'lbs');
-                                              formState.didChange(_weightController.text);
-                                            },
-                                            selectedColor: Colors.black,
-                                            labelStyle: TextStyle(
-                                              color: _weightUnit == 'lbs' ? Colors.white : Colors.black,
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: ChoiceChip(
+                                              label: const Text('LBS'),
+                                              selected: _weightUnit == 'lbs',
+                                              onSelected: (_) {
+                                                setState(() => _weightUnit = 'lbs');
+                                                formState.didChange(_weightController.text);
+                                              },
+                                              selectedColor: Colors.black,
+                                              labelStyle: TextStyle(
+                                                color: _weightUnit == 'lbs' ? Colors.white : Colors.black,
+                                              ),
+                                              backgroundColor: Colors.white,
                                             ),
-                                            backgroundColor: Colors.white,
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 12),
-                                      OutlinedButton(
-                                        onPressed: () => _showWeightPicker(formState: formState),
-                                        style: OutlinedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
+                                      const SizedBox(height: 8),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: OutlinedButton(
+                                          onPressed: () => _showWeightPicker(formState: formState),
+                                          style: OutlinedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                          child: Text(
+                                            _weightController.text.isEmpty ? 'Select' : _weightUnit == 'lbs' ? '${_weightController.text} lbs' : '${_weightController.text} kg',
+                                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                                           ),
                                         ),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              _weightController.text.isEmpty ? 'Select weight' : '${_weightController.text} ${_weightUnit == 'lbs' ? 'lbs' : 'kg'}',
-                                              style: const TextStyle(fontSize: 16),
-                                            ),
-                                            const Icon(Icons.arrow_drop_down),
-                                          ],
-                                        ),
                                       ),
+                                      if (formState.hasError)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 4),
+                                          child: Text(
+                                            formState.errorText!,
+                                            style: const TextStyle(color: Colors.red, fontSize: 11),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
                                     ],
                                   ),
                                 ),
-                                if (formState.hasError)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 6, left: 4),
-                                    child: Text(
-                                      formState.errorText!,
-                                      style: const TextStyle(color: Colors.red, fontSize: 12),
-                                    ),
-                                  ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 16),
 

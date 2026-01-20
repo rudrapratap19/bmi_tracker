@@ -246,19 +246,25 @@ class _LoginScreenState extends State<LoginScreen> {
                                   SizedBox(
                                     width: double.infinity,
                                     height: 50,
-                                    child: OutlinedButton.icon(
+                                    child: OutlinedButton(
                                       onPressed: _loginWithGoogle,
-                                      icon: Icon(
-                                        Icons.g_mobiledata,
-                                        size: 32,
-                                        color: Colors.red.shade700,
-                                      ),
-                                      label: const Text('Sign in with Google'),
                                       style: OutlinedButton.styleFrom(
                                         side: BorderSide(color: Colors.grey.shade300),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(12),
                                         ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Image.asset(
+                                            'asset/image.png',
+                                            height: 24,
+                                            width: 24,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          const Text('Sign in with Google'),
+                                        ],
                                       ),
                                     ),
                                   ),

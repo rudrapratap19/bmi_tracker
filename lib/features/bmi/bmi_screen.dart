@@ -190,28 +190,28 @@ class _BMIScreenState extends State<BMIScreen> {
                         _buildStatRow(
                           Icons.height,
                           'Height',
-                          '${profile.height} ${profile.heightUnit}',
+                          '${widget.profile.height} ${widget.profile.heightUnit}',
                           Colors.blue,
                         ),
                         const Divider(height: 24),
                         _buildStatRow(
                           Icons.monitor_weight,
                           'Weight',
-                          '${profile.weight} ${profile.weightUnit}',
+                          '${widget.profile.weight} ${widget.profile.weightUnit}',
                           Colors.green,
                         ),
                         const Divider(height: 24),
                         _buildStatRow(
                           Icons.person,
                           'Gender',
-                          profile.gender,
+                          widget.profile.gender,
                           Colors.purple,
                         ),
                         const Divider(height: 24),
                         _buildStatRow(
                           Icons.calendar_today,
                           'Recorded',
-                          DateFormat('MMM dd, yyyy').format(profile.date),
+                          DateFormat('MMM dd, yyyy').format(widget.profile.date),
                           Colors.orange,
                         ),
                       ],
@@ -414,7 +414,7 @@ class _BMIScreenState extends State<BMIScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => UserForm(uid: uid),
+                              builder: (_) => UserForm(uid: widget.uid),
                             ),
                           );
                         },
