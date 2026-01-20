@@ -2,6 +2,11 @@
 
 A feature-rich Flutter application for calculating and tracking Body Mass Index (BMI) with multi-user profile support, weight history visualization, and Firebase authentication.
 
+**[Download APK](https://github.com/rudrapratap19/bmi_tracker/releases/download/v1.0.0/app-release.apk)**
+
+
+**[Demo Video](https://drive.google.com/file/d/18CRe1vR1ilicLXsUO39omHHhTEOuBs-C/view?usp=drive_link)**
+
 ## � Screenshots
 
 | Login & Authentication | Profile Details Entry | BMI Dashboard & Stats |
