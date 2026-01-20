@@ -4,6 +4,7 @@ import '../../models/user_profile.dart';
 import '../../core/utils/bmi_calculator.dart';
 import '../../core/services/firestore_service.dart';
 import 'weight_graph.dart';
+import '../../models/weight_entry.dart';
 import '../profile/settings_screen.dart';
 import '../profile/user_form.dart';
 
@@ -244,8 +245,8 @@ class BMIScreen extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        StreamBuilder<List<UserProfile>>(
-                          stream: FirestoreService().getProfiles(uid),
+                        StreamBuilder<List<WeightEntry>>(
+                          stream: FirestoreService().getWeightHistory(uid, profile.id),
                           builder: (context, snapshot) {
                             if (snapshot.hasError) {
                               return Center(
@@ -268,8 +269,8 @@ class BMIScreen extends StatelessWidget {
                               );
                             }
 
-                            final profiles = snapshot.data!;
-                            if (profiles.isEmpty) {
+                            final entries = snapshot.data!;
+                            if (entries.isEmpty) {
                               return Center(
                                 child: Padding(
                                   padding: const EdgeInsets.all(20),
@@ -283,10 +284,53 @@ class BMIScreen extends StatelessWidget {
                               );
                             }
 
-                            // Sort by date descending
-                            profiles.sort((a, b) => b.date.compareTo(a.date));
-
-                            return WeightGraph(profiles: profiles);
+                            // Already ordered by date desc in query; pass to graph
+                            return Column(
+                              children: [
+                                WeightGraph(entries: entries),
+                                const SizedBox(height: 16),
+                                ListView.separated(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: entries.length,
+                                  separatorBuilder: (_, __) => const Divider(height: 1),
+                                  itemBuilder: (_, i) {
+                                    final e = entries[i];
+                                    return ListTile(
+                                      leading: const Icon(Icons.monitor_weight),
+                                      title: Text('${e.weight.toStringAsFixed(1)} ${e.weightUnit}'),
+                                      subtitle: Text(DateFormat('MMM dd, yyyy').format(e.date)),
+                                      trailing: e.id == null
+                                          ? null
+                                          : IconButton(
+                                              icon: Icon(Icons.delete, color: Colors.red.shade400),
+                                              onPressed: () async {
+                                                final deleted = e;
+                                                final deletedId = e.id!;
+                                                await FirestoreService().deleteWeightEntry(uid, profile.id, deletedId);
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: const Text('Entry deleted'),
+                                                    action: SnackBarAction(
+                                                      label: 'Undo',
+                                                      onPressed: () async {
+                                                        await FirestoreService().addWeightEntryWithId(
+                                                          uid,
+                                                          profile.id,
+                                                          deletedId,
+                                                          deleted,
+                                                        );
+                                                      },
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            );
                           },
                         ),
                       ],

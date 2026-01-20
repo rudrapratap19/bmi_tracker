@@ -172,13 +172,13 @@ class ProfileSwitchScreen extends StatelessWidget {
                                 Row(
                                   children: [
                                     Icon(
-                                      Icons.person,
+                                      Icons.badge,
                                       size: 16,
                                       color: Colors.grey.shade600,
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      'Profile ${index + 1}',
+                                        profile.name.isEmpty ? 'Profile ${index + 1}' : profile.name,
                                       style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
@@ -258,10 +258,53 @@ class ProfileSwitchScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-                          // Arrow
-                          Icon(
-                            Icons.chevron_right,
-                            color: Colors.grey.shade400,
+                          // Actions
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.chevron_right,
+                                color: Colors.grey.shade400,
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                tooltip: 'Delete',
+                                icon: Icon(Icons.delete, color: Colors.red.shade400),
+                                onPressed: () async {
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: const Text('Delete Profile'),
+                                      content: Text('Delete ${profile.name}? This removes its weight history too.'),
+                                      actions: [
+                                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                        TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Delete', style: TextStyle(color: Colors.red.shade400))),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirm == true) {
+                                    // Fetch data for undo
+                                    final svc = FirestoreService();
+                                    final originalProfile = await svc.getProfile(uid, profile.id);
+                                    final originalWeights = await svc.getWeightHistoryOnce(uid, profile.id);
+
+                                    await svc.deleteProfile(uid, profile.id);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: const Text('Profile deleted'),
+                                        action: SnackBarAction(
+                                          label: 'Undo',
+                                          onPressed: () async {
+                                            if (originalProfile != null) {
+                                              await svc.restoreProfileWithWeights(uid, originalProfile, originalWeights);
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
                           ),
                         ],
                       ),

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
-import '../../models/user_profile.dart';
+import '../../models/weight_entry.dart';
 
 class WeightGraph extends StatelessWidget {
-  final List<UserProfile> profiles;
+  final List<WeightEntry> entries;
 
-  const WeightGraph({super.key, required this.profiles});
+  const WeightGraph({super.key, required this.entries});
 
   @override
   Widget build(BuildContext context) {
-    // Take last 7 entries and reverse to show oldest to newest
-    final last7 = profiles.take(7).toList().reversed.toList();
+    // Already limited/ordered in query; reverse to show oldest->newest
+    final last7 = entries.toList().reversed.toList();
 
     if (last7.isEmpty) {
       return const SizedBox(
@@ -23,7 +23,7 @@ class WeightGraph extends StatelessWidget {
     }
 
     // Find min and max weights for better scaling
-    final weights = last7.map((p) => p.weightInKg).toList();
+    final weights = last7.map((e) => e.weightInKg).toList();
     final minWeight = weights.reduce((a, b) => a < b ? a : b);
     final maxWeight = weights.reduce((a, b) => a > b ? a : b);
     final weightRange = maxWeight - minWeight;
@@ -109,16 +109,16 @@ class WeightGraph extends StatelessWidget {
               tooltipPadding: const EdgeInsets.all(8),
               getTooltipItems: (touchedSpots) {
                 return touchedSpots.map((spot) {
-                  final profile = last7[spot.x.toInt()];
+                  final entry = last7[spot.x.toInt()];
                   return LineTooltipItem(
-                    '${profile.weight.toStringAsFixed(1)} ${profile.weightUnit}\n',
+                    '${entry.weight.toStringAsFixed(1)} ${entry.weightUnit}\n',
                     const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                     children: [
                       TextSpan(
-                        text: DateFormat('MMM dd').format(profile.date),
+                        text: DateFormat('MMM dd').format(entry.date),
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.normal,
