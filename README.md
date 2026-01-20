@@ -4,20 +4,13 @@ A feature-rich Flutter application for calculating and tracking Body Mass Index 
 
 ## � Screenshots
 
-### Login & Authentication
-<img src="asset/screenshot/login screen.jpg" width="250" alt="Login Screen">
+| Login & Authentication | Profile Details Entry | BMI Dashboard & Stats |
+|:----------------------:|:---------------------:|:---------------------:|
+| <img src="asset/screenshot/login screen.jpg" width="250" alt="Login Screen"> | <img src="asset/screenshot/adding details.jpg" width="250" alt="Adding Profile Details"> | <img src="asset/screenshot/stats.jpg" width="250" alt="BMI Stats Dashboard"> |
 
-### Profile Details Entry
-<img src="asset/screenshot/adding details.jpg" width="250" alt="Adding Profile Details">
-
-### BMI Dashboard & Stats
-<img src="asset/screenshot/stats.jpg" width="250" alt="BMI Stats Dashboard">
-
-### Weight History Graph
-<img src="asset/screenshot/graph.jpg" width="250" alt="Weight History Graph">
-
-### Profile Management
-<img src="asset/screenshot/logout and profile switch.jpg" width="250" alt="Profile Switch & Logout">
+| Weight History Graph | Profile Management |
+|:--------------------:|:------------------:|
+| <img src="asset/screenshot/graph.jpg" width="250" alt="Weight History Graph"> | <img src="asset/screenshot/logout and profile switch.jpg" width="250" alt="Profile Switch & Logout"> |
 
 ---
 
