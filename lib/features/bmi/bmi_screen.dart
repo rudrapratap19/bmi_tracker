@@ -8,11 +8,18 @@ import '../../models/weight_entry.dart';
 import '../profile/settings_screen.dart';
 import '../profile/user_form.dart';
 
-class BMIScreen extends StatelessWidget {
+class BMIScreen extends StatefulWidget {
   final String uid;
   final UserProfile profile;
 
   const BMIScreen({super.key, required this.uid, required this.profile});
+
+  @override
+  State<BMIScreen> createState() => _BMIScreenState();
+}
+
+class _BMIScreenState extends State<BMIScreen> {
+  GraphType _graphType = GraphType.line;
 
   Color _getBMIColor(double bmi) {
     if (bmi < 18.5) return Colors.blue.shade400;
@@ -31,8 +38,8 @@ class BMIScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bmi = BMICalculator.calculate(
-      weightKg: profile.weightInKg,
-      heightCm: profile.heightInCm,
+      weightKg: widget.profile.weightInKg,
+      heightCm: widget.profile.heightInCm,
     );
     final category = BMICalculator.category(bmi);
     final color = _getBMIColor(bmi);
@@ -49,7 +56,7 @@ class BMIScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => SettingsScreen(uid: uid, currentProfile: profile),
+                  builder: (_) => SettingsScreen(uid: widget.uid, currentProfile: widget.profile),
                 ),
               );
             },
@@ -213,7 +220,7 @@ class BMIScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
 
-                // Weight History Graph
+                // Weight History Graph with Type Selector
                 Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
@@ -235,18 +242,51 @@ class BMIScreen extends StatelessWidget {
                                 color: Colors.blue.shade900,
                               ),
                             ),
-                            Text(
-                              'Last 7 days',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
-                              ),
+                            Row(
+                              children: [
+                                Tooltip(
+                                  message: 'Line Chart',
+                                  child: IconButton(
+                                    icon: Icon(
+                                      Icons.show_chart,
+                                      color: _graphType == GraphType.line
+                                          ? Colors.blue.shade700
+                                          : Colors.grey.shade400,
+                                    ),
+                                    onPressed: () {
+                                      setState(() => _graphType = GraphType.line);
+                                    },
+                                  ),
+                                ),
+                                Tooltip(
+                                  message: 'Bar Chart',
+                                  child: IconButton(
+                                    icon: Icon(
+                                      Icons.bar_chart,
+                                      color: _graphType == GraphType.bar
+                                          ? Colors.blue.shade700
+                                          : Colors.grey.shade400,
+                                    ),
+                                    onPressed: () {
+                                      setState(() => _graphType = GraphType.bar);
+                                    },
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Last 7 days',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
                         const SizedBox(height: 16),
                         StreamBuilder<List<WeightEntry>>(
-                          stream: FirestoreService().getWeightHistory(uid, profile.id),
+                          stream: FirestoreService().getWeightHistory(widget.uid, widget.profile.id),
                           builder: (context, snapshot) {
                             if (snapshot.hasError) {
                               return Center(
@@ -287,7 +327,7 @@ class BMIScreen extends StatelessWidget {
                             // Already ordered by date desc in query; pass to graph
                             return Column(
                               children: [
-                                WeightGraph(entries: entries),
+                                WeightGraph(entries: entries, graphType: _graphType),
                                 const SizedBox(height: 16),
                                 ListView.separated(
                                   shrinkWrap: true,
@@ -307,7 +347,7 @@ class BMIScreen extends StatelessWidget {
                                               onPressed: () async {
                                                 final deleted = e;
                                                 final deletedId = e.id!;
-                                                await FirestoreService().deleteWeightEntry(uid, profile.id, deletedId);
+                                                await FirestoreService().deleteWeightEntry(widget.uid, widget.profile.id, deletedId);
                                                 ScaffoldMessenger.of(context).showSnackBar(
                                                   SnackBar(
                                                     content: const Text('Entry deleted'),
@@ -315,8 +355,8 @@ class BMIScreen extends StatelessWidget {
                                                       label: 'Undo',
                                                       onPressed: () async {
                                                         await FirestoreService().addWeightEntryWithId(
-                                                          uid,
-                                                          profile.id,
+                                                          widget.uid,
+                                                          widget.profile.id,
                                                           deletedId,
                                                           deleted,
                                                         );
@@ -349,8 +389,8 @@ class BMIScreen extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (_) => UserForm(
-                                uid: uid,
-                                existingProfile: profile,
+                                uid: widget.uid,
+                                existingProfile: widget.profile,
                               ),
                             ),
                           );

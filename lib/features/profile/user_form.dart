@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../../core/services/firestore_service.dart';
 import '../../models/user_profile.dart';
 import '../../models/weight_entry.dart';
@@ -25,6 +26,7 @@ class _UserFormState extends State<UserForm> {
   String _heightUnit = 'cm';
   String _weightUnit = 'kg';
   bool _isLoading = false;
+  DateTime _measurementDate = DateTime.now();
 
   @override
   void initState() {
@@ -36,6 +38,7 @@ class _UserFormState extends State<UserForm> {
       _gender = widget.existingProfile!.gender;
       _heightUnit = widget.existingProfile!.heightUnit;
       _weightUnit = widget.existingProfile!.weightUnit;
+      _measurementDate = widget.existingProfile!.date;
     }
   }
 
@@ -45,6 +48,169 @@ class _UserFormState extends State<UserForm> {
     _heightController.dispose();
     _weightController.dispose();
     super.dispose();
+  }
+
+  void _showHeightPicker() {
+    final isInches = _heightUnit == 'in';
+    final items = isInches
+        ? List.generate(25, (i) => 48 + i) // 4'0" (48 in) to ~6'11" (72+)
+        : List.generate(81, (i) => 140 + i); // 140cm-220cm
+
+    final initialIndex = _heightController.text.isNotEmpty
+        ? items.indexWhere((v) => v.toString() == _heightController.text)
+        : 0;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) {
+        return SizedBox(
+          height: 280,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Container(
+                  height: 4,
+                  width: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: CupertinoPicker(
+                  scrollController: FixedExtentScrollController(initialItem: initialIndex < 0 ? 0 : initialIndex),
+                  itemExtent: 44,
+                  onSelectedItemChanged: (i) {
+                    final val = items[i];
+                    setState(() {
+                      _heightController.text = val.toString();
+                    });
+                  },
+                  children: items.map((v) {
+                    if (isInches) {
+                      final feet = v ~/ 12;
+                      final inches = v % 12;
+                      return Center(
+                        child: Text(
+                          "$feet' $inches\"",
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                        ),
+                      );
+                    }
+                    return Center(
+                      child: Text(
+                        '$v cm',
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Done'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showWeightPicker({FormFieldState<String>? formState}) {
+    final isLbs = _weightUnit == 'lbs';
+    final items = isLbs
+        ? List.generate(251, (i) => 80 + i) // 80-330 lbs
+        : List.generate(166, (i) => 35 + i); // 35-200 kg
+
+    final initialIndex = _weightController.text.isNotEmpty
+        ? items.indexWhere((v) => v.toString() == _weightController.text)
+        : 0;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) {
+        return SizedBox(
+          height: 280,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Container(
+                  height: 4,
+                  width: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: CupertinoPicker(
+                  scrollController: FixedExtentScrollController(initialItem: initialIndex < 0 ? 0 : initialIndex),
+                  itemExtent: 44,
+                  onSelectedItemChanged: (i) {
+                    final val = items[i];
+                    setState(() {
+                      _weightController.text = val.toString();
+                    });
+                    formState?.didChange(_weightController.text);
+                  },
+                  children: items
+                      .map(
+                        (v) => Center(
+                          child: Text(
+                            '$v ${isLbs ? 'lbs' : 'kg'}',
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Done'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _saveProfile() async {
@@ -92,7 +258,7 @@ class _UserFormState extends State<UserForm> {
         height: double.parse(_heightController.text),
         weight: double.parse(_weightController.text),
         gender: _gender,
-        date: DateTime.now(),
+        date: _measurementDate,
         heightUnit: _heightUnit,
         weightUnit: _weightUnit,
       );
@@ -171,6 +337,45 @@ class _UserFormState extends State<UserForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Progress indicator style header
+                  Text(
+                    'Body Data',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue.shade900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Fill your latest measurements',
+                    style: TextStyle(color: Colors.grey.shade700),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: Colors.yellow.shade600,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Container(
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
                   Card(
                     elevation: 4,
                     shape: RoundedRectangleBorder(
@@ -233,6 +438,41 @@ class _UserFormState extends State<UserForm> {
                           ),
                           const SizedBox(height: 16),
 
+                          // Measurement date
+                          Text(
+                            'Measurement date',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.calendar_today),
+                            label: Text(
+                              '${_measurementDate.year}-${_measurementDate.month.toString().padLeft(2, '0')}-${_measurementDate.day.toString().padLeft(2, '0')}',
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: _measurementDate,
+                                firstDate: DateTime.now().subtract(const Duration(days: 365 * 2)),
+                                lastDate: DateTime.now(),
+                              );
+                              if (picked != null) {
+                                setState(() => _measurementDate = picked);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
                           // Height Section
                           Text(
                             'Height',
@@ -243,57 +483,62 @@ class _UserFormState extends State<UserForm> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: TextFormField(
-                                  controller: _heightController,
-                                  keyboardType: TextInputType.number,
-                                  decoration: InputDecoration(
-                                    labelText: 'Value',
-                                    prefixIcon: const Icon(Icons.height),
-                                    border: OutlineInputBorder(
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    ChoiceChip(
+                                      label: const Text('FT'),
+                                      selected: _heightUnit == 'in',
+                                      onSelected: (_) => setState(() => _heightUnit = 'in'),
+                                      selectedColor: Colors.black,
+                                      labelStyle: TextStyle(
+                                        color: _heightUnit == 'in' ? Colors.white : Colors.black,
+                                      ),
+                                      backgroundColor: Colors.white,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    ChoiceChip(
+                                      label: const Text('CM'),
+                                      selected: _heightUnit == 'cm',
+                                      onSelected: (_) => setState(() => _heightUnit = 'cm'),
+                                      selectedColor: Colors.black,
+                                      labelStyle: TextStyle(
+                                        color: _heightUnit == 'cm' ? Colors.white : Colors.black,
+                                      ),
+                                      backgroundColor: Colors.white,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                OutlinedButton(
+                                  onPressed: _showHeightPicker,
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                                    shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    filled: true,
-                                    fillColor: Colors.grey.shade50,
                                   ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Required';
-                                    }
-                                    final height = double.tryParse(value);
-                                    if (height == null || height <= 0) {
-                                      return 'Invalid';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  initialValue: _heightUnit,
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.grey.shade50,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        _heightController.text.isEmpty ? 'Select height' : '${_heightController.text} ${_heightUnit == 'in' ? 'in' : 'cm'}',
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
+                                      const Icon(Icons.arrow_drop_down),
+                                    ],
                                   ),
-                                  items: ['cm', 'in']
-                                      .map((unit) => DropdownMenuItem(
-                                            value: unit,
-                                            child: Text(unit),
-                                          ))
-                                      .toList(),
-                                  onChanged: (value) {
-                                    setState(() => _heightUnit = value!);
-                                  },
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 16),
 
@@ -307,57 +552,89 @@ class _UserFormState extends State<UserForm> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: TextFormField(
-                                  controller: _weightController,
-                                  keyboardType: TextInputType.number,
-                                  decoration: InputDecoration(
-                                    labelText: 'Value',
-                                    prefixIcon: const Icon(Icons.monitor_weight),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.grey.shade50,
+                          FormField<String>(
+                            validator: (_) {
+                              if (_weightController.text.isEmpty) return 'Required';
+                              final weight = double.tryParse(_weightController.text);
+                              if (weight == null || weight <= 0) return 'Invalid';
+                              return null;
+                            },
+                            builder: (formState) => Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Required';
-                                    }
-                                    final weight = double.tryParse(value);
-                                    if (weight == null || weight <= 0) {
-                                      return 'Invalid';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  initialValue: _weightUnit,
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.grey.shade50,
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          ChoiceChip(
+                                            label: const Text('KG'),
+                                            selected: _weightUnit == 'kg',
+                                            onSelected: (_) {
+                                              setState(() => _weightUnit = 'kg');
+                                              formState.didChange(_weightController.text);
+                                            },
+                                            selectedColor: Colors.black,
+                                            labelStyle: TextStyle(
+                                              color: _weightUnit == 'kg' ? Colors.white : Colors.black,
+                                            ),
+                                            backgroundColor: Colors.white,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          ChoiceChip(
+                                            label: const Text('LBS'),
+                                            selected: _weightUnit == 'lbs',
+                                            onSelected: (_) {
+                                              setState(() => _weightUnit = 'lbs');
+                                              formState.didChange(_weightController.text);
+                                            },
+                                            selectedColor: Colors.black,
+                                            labelStyle: TextStyle(
+                                              color: _weightUnit == 'lbs' ? Colors.white : Colors.black,
+                                            ),
+                                            backgroundColor: Colors.white,
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      OutlinedButton(
+                                        onPressed: () => _showWeightPicker(formState: formState),
+                                        style: OutlinedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              _weightController.text.isEmpty ? 'Select weight' : '${_weightController.text} ${_weightUnit == 'lbs' ? 'lbs' : 'kg'}',
+                                              style: const TextStyle(fontSize: 16),
+                                            ),
+                                            const Icon(Icons.arrow_drop_down),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  items: ['kg', 'lbs']
-                                      .map((unit) => DropdownMenuItem(
-                                            value: unit,
-                                            child: Text(unit),
-                                          ))
-                                      .toList(),
-                                  onChanged: (value) {
-                                    setState(() => _weightUnit = value!);
-                                  },
                                 ),
-                              ),
-                            ],
+                                if (formState.hasError)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 6, left: 4),
+                                    child: Text(
+                                      formState.errorText!,
+                                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 16),
 
